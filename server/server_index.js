@@ -1,9 +1,9 @@
 const express = require('express');
-const cors = require('cors');
-const morgan = require('morgan');
-const dotenv = require('dotenv');
-const path = require('path');
-const connectDB = require('./config/db');
+const cors    = require('cors');
+const morgan  = require('morgan');
+const dotenv  = require('dotenv');
+const path    = require('path');
+const connectDB    = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
 
 dotenv.config();
@@ -11,13 +11,26 @@ connectDB();
 
 const app = express();
 
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:3000', credentials: true }));
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  'http://localhost:3000',
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ── Routes ──────────────────────────────────────────────────
+// ── API Routes ───────────────────────────────
 app.use('/api/auth',        require('./routes/auth'));
 app.use('/api/leads',       require('./routes/leads'));
 app.use('/api/bookings',    require('./routes/bookings'));
@@ -30,8 +43,11 @@ app.use('/api/finance',     require('./routes/finance'));
 app.use('/api/reports',     require('./routes/reports'));
 app.use('/api/users',       require('./routes/users'));
 app.use('/api/reminders',   require('./routes/reminders'));
+app.use('/api/seed',        require('./routes/seed'));   // ← seed route
 
-app.get('/api/health', (_req, res) => res.json({ status: 'OK', app: 'Travel CRM API' }));
+app.get('/api/health', (_req, res) =>
+  res.json({ status: 'OK', app: 'Travel CRM API', env: process.env.NODE_ENV })
+);
 
 app.use(errorHandler);
 
