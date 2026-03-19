@@ -1,6 +1,12 @@
 import axios from 'axios';
 
-const api = axios.create({ baseURL: '/api' });
+// REACT_APP_API_URL set hai toh woh use karo
+// Nahi hai toh same origin /api use karo (jo _redirects backend pe forward karega)
+const BASE_URL = process.env.REACT_APP_API_URL || '/api';
+
+const api = axios.create({
+  baseURL: BASE_URL,
+});
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
