@@ -1,10 +1,20 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState } from 'react';
 import api from '../services/api';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user,    setUser]    = useState(() => JSON.parse(localStorage.getItem('user') || 'null'));
+  const [user, setUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem('user');
+      // agar null ya undefined hai toh null return karo
+      if (!stored || stored === 'undefined') return null;
+      return JSON.parse(stored);
+    } catch {
+      return null;
+    }
+  });
+
   const [loading, setLoading] = useState(false);
 
   const login = async (email, password) => {
@@ -12,7 +22,7 @@ export function AuthProvider({ children }) {
     try {
       const { data } = await api.post('/auth/login', { email, password });
       localStorage.setItem('token', data.token);
-      localStorage.setItem('user',  JSON.stringify(data.user));
+      localStorage.setItem('user', JSON.stringify(data.user));
       setUser(data.user);
       return { success: true };
     } catch (err) {
