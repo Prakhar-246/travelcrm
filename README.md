@@ -160,6 +160,3 @@ GET/POST /api/users             (Admin only)
 ## 📞 Support
 
 **TravelandHolidays.in**  
-📱 +91-7000739379  
-📧 sales.travelandholidays@gmail.com  
-🌐 www.travelandholidays.in
